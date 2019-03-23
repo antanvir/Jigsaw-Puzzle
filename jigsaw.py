@@ -1,7 +1,9 @@
 # ===========Remaining Tasks======== #
 #
+import time
 import sys
 import random
+import math
 import pygame
 from pygame.locals import *
 
@@ -12,14 +14,26 @@ class JigsawPuzzle():
 			return True
 		return False
 
+
+	pygame.init()
+	
+	deviceDisplay = pygame.display.Info()
+	#display = pygame.display.set_mode(DISPLAY_SIZE, pygame.RESIZABLE)
+	#display = pygame.display.set_mode((0,0), pygame.RESIZABLE)
+	display = pygame.display.set_mode((deviceDisplay.current_w, deviceDisplay.current_h), pygame.RESIZABLE)
+	pygame.display.set_caption("JIGSAW PUZZLE : MAKING OBJECT FROM PIECES!")
+
+
 	image = pygame.image.load("mango.jpg")
 	width, height = image.get_size()
 
 	IMAGE_SIZE = (width, height)
 	DISPLAY_SIZE = (4*width, 3*height + height//2)
 
-	ver_gap = (height/2)/4
+	#ver_gap = (height/2)/4
+	ver_gap = (deviceDisplay.current_h/4)/4
 	hor_gap = (width/2)/4
+	#hor_gap = (deviceDisplay.current_w/2)/4
 
 	COLUMNS = 2
 	ROWS = 2
@@ -27,82 +41,84 @@ class JigsawPuzzle():
 	TILE_WIDTH = int(width / COLUMNS) + 1
 	TILE_HEIGHT = int(height / ROWS) + 1
 
-
 	SILVER = (192, 192, 192)
 	GRAY = (128, 128, 128)
 	BLACK = (0, 0, 0)
+	CUSTOM_DISPLAY = (30, 89, 94)
+	FONT_COLOR = (0, 255, 0)
 
 	silver_rect = pygame.Surface((TILE_WIDTH , TILE_HEIGHT))
 	silver_rect.fill(SILVER)
+
 	gray_rect = pygame.Surface((TILE_WIDTH, TILE_HEIGHT))
 	gray_rect.fill(GRAY)
 
 	black_rect = pygame.Surface((TILE_WIDTH , TILE_HEIGHT))
 	black_rect.fill(BLACK)
 
-	'''screen_middle = Rect((0, TILE_HEIGHT + 5), (2 * width + 50, height - (TILE_HEIGHT + 5)) )
-	screen_left = Rect((0, TILE_HEIGHT + 5), (TILE_WIDTH, 2 * height + 50 - (TILE_HEIGHT + 5)) )
-	screen_right = Rect((3 * TILE_WIDTH + 1, TILE_HEIGHT + 5), 
-					((2 * width + 50 - (3 * TILE_WIDTH + 1)), 2 * height + 50 - (TILE_HEIGHT + 5)) )
-	screen_down = Rect((0, 2 * height + 1), (2 * width + 50, 50 - 1))'''
-
-	# black portion of the screen
-	screen_middle = Rect((0, height + ver_gap), (4*width, height) )
-	screen_left = Rect((0, height + ver_gap), (width + width/2, 2*height + ver_gap)) 
-	screen_right = Rect((2*width + (width/2 + 1), height + ver_gap), 
-										(width + width/2, 2*height + ver_gap) )
-	screen_down = Rect((0, 3*height + (ver_gap + 1)), (4*width, height))
-
-
 	hor_line = pygame.Surface((width, 1))
 	hor_line.fill(BLACK)
 	ver_line = pygame.Surface((1, height))
 	ver_line.fill(BLACK)
 
-	pygame.init()
-	display = pygame.display.set_mode(DISPLAY_SIZE, 0, 32)
-	pygame.display.set_caption("JIGSAW PUZZLE : MAKING OBJECT FROM PIECES!")
+	ver_divider = pygame.Surface((1, deviceDisplay.current_h - 4*ver_gap))
+	ver_divider.fill(SILVER)
+	
 
 	image1 = pygame.image.load("IMG-0.jpg")
 	image2 = pygame.image.load("IMG-1.jpg")
 	image3 = pygame.image.load("IMG-2.jpg")
 	image4 = pygame.image.load("IMG-3.jpg")
 
-	display.blit(image, (2*width + 6*hor_gap, ver_gap))
-	ver_line.fill(SILVER)
-	display.blit(ver_line, (2*width + 5*hor_gap, ver_gap))
-	ver_line.fill(BLACK)
+	# display main picture & main-picture-divider from pieces
+	display.fill(CUSTOM_DISPLAY)
+	display.blit(image, (5.8*deviceDisplay.current_w/8, ver_gap))	
+	display.blit(ver_divider, (5.2*deviceDisplay.current_w/8, ver_gap))	
 
 	# positions of 4 piece images 
-	display.blit(image1, (hor_gap, ver_gap))
-	display.blit(image2, (2*hor_gap + TILE_WIDTH, ver_gap))
-	display.blit(image3, (3*hor_gap + 2*TILE_WIDTH, ver_gap))
-	display.blit(image4, (4*hor_gap + 3*TILE_WIDTH, ver_gap))
+	display.blit(image1, (3*hor_gap, ver_gap))
+	display.blit(image2, (4*hor_gap + TILE_WIDTH, ver_gap))
+	display.blit(image3, (5*hor_gap + 2*TILE_WIDTH, ver_gap))
+	display.blit(image4, (6*hor_gap + 3*TILE_WIDTH, ver_gap))
 
 	# position of blank tiles to hold 4 pieces of images
-	display.blit(silver_rect, (width + width/2, 2*height + ver_gap))
-	display.blit(gray_rect, (width + TILE_WIDTH + (width/2+1), 2*height + ver_gap))
-	display.blit(gray_rect, (width + width/2, 2*height + ver_gap + TILE_HEIGHT+1))
-	display.blit(silver_rect, (width + TILE_WIDTH + (width/2+1), 2*height + ver_gap + TILE_HEIGHT+1))
-
+	display.blit(silver_rect, (4*hor_gap + TILE_WIDTH, 2*height + ver_gap))
+	display.blit(gray_rect, (4*hor_gap + 2*TILE_WIDTH + 1, 2*height + ver_gap))
+	display.blit(gray_rect, (4*hor_gap + TILE_WIDTH, 2*height + ver_gap + TILE_HEIGHT+1))
+	display.blit(silver_rect, (4*hor_gap + 2*TILE_WIDTH + 1, 2*height + ver_gap + TILE_HEIGHT+1))
 
 	# TILE -> (left, top, right, bottom)
-	IMAGE1_TILE = (hor_gap, ver_gap, hor_gap + TILE_WIDTH, ver_gap+TILE_HEIGHT)
-	IMAGE2_TILE = (2*hor_gap + TILE_WIDTH, ver_gap, 2*hor_gap + 2*TILE_WIDTH, ver_gap+TILE_HEIGHT)
-	IMAGE3_TILE = (3*hor_gap + 2*TILE_WIDTH, ver_gap, 3*hor_gap + 3*TILE_WIDTH, ver_gap+TILE_HEIGHT)
-	IMAGE4_TILE = (4*hor_gap + 3*TILE_WIDTH, ver_gap, 4*hor_gap + 4*TILE_WIDTH, ver_gap+TILE_HEIGHT)
+	IMAGE1_TILE = (3*hor_gap, ver_gap, 3*hor_gap + TILE_WIDTH, ver_gap+TILE_HEIGHT)
+	IMAGE2_TILE = (4*hor_gap + TILE_WIDTH, ver_gap, 4*hor_gap + 2*TILE_WIDTH, ver_gap+TILE_HEIGHT)
+	IMAGE3_TILE = (5*hor_gap + 2*TILE_WIDTH, ver_gap, 5*hor_gap + 3*TILE_WIDTH, ver_gap+TILE_HEIGHT)
+	IMAGE4_TILE = (6*hor_gap + 3*TILE_WIDTH, ver_gap, 6*hor_gap + 4*TILE_WIDTH, ver_gap+TILE_HEIGHT)
 
-	BLANK_TILE1 = (width + width/2, 2*height + ver_gap, 
-					width + width/2 + TILE_WIDTH, 2*height + ver_gap + TILE_HEIGHT)
-	BLANK_TILE2 = (width + TILE_WIDTH + (width/2+1), 2*height + ver_gap, 
-					2*width + (width/2+1), 2*height + ver_gap + TILE_HEIGHT)
-	BLANK_TILE3 = (width + width/2, 2*height + ver_gap + TILE_HEIGHT+1, 
-					width + width/2 + TILE_WIDTH, 2*height + ver_gap + 2*TILE_HEIGHT)
-	BLANK_TILE4 = (width + TILE_WIDTH + (width/2+1), 2*height + ver_gap + TILE_HEIGHT+1, 
-					2*width + (width/2+1), 2*height + ver_gap + 2*TILE_HEIGHT)
+	BLANK_TILE1 = (4*hor_gap + TILE_WIDTH, 2*height + ver_gap, 
+					4*hor_gap + 2*TILE_WIDTH, 2*height + ver_gap + TILE_HEIGHT)
+	BLANK_TILE2 = (4*hor_gap + 2*TILE_WIDTH + 1, 2*height + ver_gap, 
+					4*hor_gap + 3*TILE_WIDTH + 1, 2*height + ver_gap + TILE_HEIGHT)
+	BLANK_TILE3 = (4*hor_gap + TILE_WIDTH, 2*height + ver_gap + TILE_HEIGHT+1, 
+					4*hor_gap + 2*TILE_WIDTH, 2*height + ver_gap + 2*TILE_HEIGHT)
+	BLANK_TILE4 = (4*hor_gap + 2*TILE_WIDTH + 1, 2*height + ver_gap + TILE_HEIGHT+1, 
+					4*hor_gap + 3*TILE_WIDTH + 1, 2*height + ver_gap + 2*TILE_HEIGHT)
+
+	# black portion of the screen // Rect((left, top), (width, height))
+	screen_middle = Rect((0, IMAGE1_TILE[3]), 
+					(5.2*deviceDisplay.current_w/8 , BLANK_TILE1[1]-IMAGE1_TILE[3]) )
+	screen_left = Rect((0, IMAGE1_TILE[3]), (BLANK_TILE1[0], deviceDisplay.current_h-IMAGE1_TILE[3])) 
+	screen_right = Rect((BLANK_TILE2[2], IMAGE1_TILE[3]), 
+					(5.2*deviceDisplay.current_w/8-BLANK_TILE2[2], deviceDisplay.current_h-IMAGE1_TILE[3]))
+	screen_down = Rect((0, BLANK_TILE4[3]),
+					(5.2*deviceDisplay.current_w/8 , deviceDisplay.current_h-BLANK_TILE4[3]))
+
+
+	timer = 0
+	pygame.font.init()
+	gameFont = pygame.font.Font('freesansbold.ttf', 25)
+	timerText = gameFont.render('Timer : ' + str(timer), False, FONT_COLOR)
+	display.blit(timerText, (6*deviceDisplay.current_w/8, BLANK_TILE1[1]-ver_gap))
 
 	pygame.display.flip()
-
 
 	left_button_pressed = False
 	mouse_dragged = False
@@ -113,8 +129,15 @@ class JigsawPuzzle():
 	clock = pygame.time.Clock()
 
 	while True:
+		#clock.tick(70)
+		seconds = pygame. time.get_ticks()//1000.0
+		timer += seconds
+		displayTimer = math.trunc(timer)
+		#print(displayTimer)
+		timerText = gameFont.render('Timer : ' + str(displayTimer), False, FONT_COLOR)
+		display.blit(timerText, (6*deviceDisplay.current_w/8, BLANK_TILE1[1]-ver_gap))
+		#pygame.display.update()
 
-		clock.tick(70)
 		for event in pygame.event.get():
 
 			if event.type == QUIT:
@@ -137,7 +160,7 @@ class JigsawPuzzle():
 						image3_dragged = True
 						display.blit(black_rect, (IMAGE3_TILE[0], IMAGE3_TILE[1]))
 
-				elif pointerIsInSurface(mouseX, mouseY, IMAGE1_TILE) and image4_placed == False:
+				elif pointerIsInSurface(mouseX, mouseY, IMAGE4_TILE) and image4_placed == False:
 						image4_dragged = True
 						display.blit(black_rect, (IMAGE4_TILE[0], IMAGE4_TILE[1]))
 
@@ -149,7 +172,7 @@ class JigsawPuzzle():
 
 				mouseX, mouseY = pygame.mouse.get_pos()
 
-				if mouseX < width+width/2 and mouseY < 2*height+ver_gap:
+				if mouseX < BLANK_TILE1[0] and mouseY < BLANK_TILE1[1]:
 					if image1_dragged:
 						display.blit(image1, (IMAGE1_TILE[0], IMAGE1_TILE[1]))
 						image1_dragged = False
@@ -214,7 +237,7 @@ class JigsawPuzzle():
 				mouseX -= TILE_WIDTH / 2
 				mouseY -= TILE_HEIGHT / 2
 
-				if mouseY  > height + ver_gap:
+				if mouseY  > ver_gap + TILE_HEIGHT and mouseX < 5.2*deviceDisplay.current_w/8:
 					if image1_dragged:
 						display.blit(image1, (mouseX, mouseY))
 
@@ -230,13 +253,16 @@ class JigsawPuzzle():
 
 
 			pygame.display.flip()
-			display.fill(BLACK, screen_middle)
-			display.fill(BLACK, screen_left)
-			display.fill(BLACK, screen_right)
-			display.fill(BLACK, screen_down)
+			display.fill(CUSTOM_DISPLAY, screen_middle)
+			display.fill(CUSTOM_DISPLAY, screen_left)
+			display.fill(CUSTOM_DISPLAY, screen_right)
+			display.fill(CUSTOM_DISPLAY, screen_down)
 
-			display.blit(hor_line, (width + width/2, 2*height + ver_gap + TILE_HEIGHT))
-			display.blit(ver_line, (width + width/2 + TILE_WIDTH, 2*height + ver_gap))
+			'''display.blit(hor_line, (4*hor_gap + TILE_WIDTH, 2*height + ver_gap + TILE_HEIGHT))
+			display.blit(ver_line, (4*hor_gap + 2*TILE_WIDTH, 2*height + ver_gap))
+			'''
+			display.blit(hor_line, (BLANK_TILE1[0], BLANK_TILE1[1]+TILE_HEIGHT))
+			display.blit(ver_line, (BLANK_TILE2[0]-1, BLANK_TILE2[1]-1))
 
 			if image1_placed:
 				display.blit(image1, (BLANK_TILE1[0], BLANK_TILE1[1]))
